@@ -37,26 +37,29 @@ router.post('/:userId', (req, res, next) => {
     username: req.body.username
   };
 
-  // User.findOne({"username" : req.body.username}, "username", (err, user) => {
-  //   if (user !== null) {
-  //     res.render('profiles/edit', {
-  //       user: user,
-  //       error: 'That username is already taken'
-  //     });
-  //   }
-  // });
+  User.findOne({"username" : req.body.username}, "username", (err, user) => {
+    if (user !== null && user.username !== req.session.user.username) {
+      res.render('profiles/edit', {
+        user: user,
+        error: 'That username is already taken'
+      });
+    } else {
 
-  if (req.body.password) {
-    updates.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(saltRounds));
-  }
+      if (req.body.password) {
+        updates.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(saltRounds));
+      }
 
-  User.findByIdAndUpdate(userId, updates, {new: true}, (err, user) => {
-    if (err) {return next(err);}
-    else {
-      req.session.user = user;
-      res.redirect('/welcome');
+      User.findByIdAndUpdate(userId, updates, {new: true}, (err, user) => {
+        if (err) {return next(err);}
+        else {
+          req.session.user = user;
+          res.redirect('/welcome');
+        }
+      });
     }
   });
+
+
 });
 
 
